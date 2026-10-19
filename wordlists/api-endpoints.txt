@@ -1,0 +1,16 @@
+admin
+internal
+debug
+v1
+v2
+v3
+beta
+api
+api/v1
+graphql
+swagger
+docs
+openapi
+test
+dev
+staging

@@ -1,0 +1,15 @@
+id
+user_id
+account_id
+tenant_id
+role
+is_admin
+debug
+test
+file
+url
+path
+redirect
+token
+auth
+session

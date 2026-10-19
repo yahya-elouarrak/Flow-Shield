@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowShield Security Report - {{ project.name }}</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --primary: #2563eb;
+            --card-bg: #ffffff;
+            
+            --critical: #dc2626;
+            --high: #ea580c;
+            --medium: #d97706;
+            --low: #2563eb;
+            --info: #64748b;
+        }
+
+        @page {
+            size: A4;
+            margin: 18mm 14mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+            color: var(--text-main);
+            font-family: Inter, Arial, sans-serif;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .container {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-color);
+            page-break-after: avoid;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        /* Generic Report Blocks */
+        .report-section,
+        .summary-card,
+        .finding-card,
+        .recommendation-card,
+        .metadata-card {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title,
+        .finding-title {
+            break-after: avoid;
+            page-break-after: avoid;
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            page-break-inside: auto;
+            margin-bottom: 1.5rem;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tfoot {
+            display: table-footer-group;
+        }
+
+        tr {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--text-muted);
+            background-color: #f9fafb;
+        }
+
+        .endpoint-cell {
+            font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+            font-size: 10px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25em 0.5em;
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+            color: #fff;
+        }
+
+        .badge.critical { background-color: var(--critical); }
+        .badge.high { background-color: var(--high); }
+        .badge.medium { background-color: var(--medium); }
+        .badge.low { background-color: var(--low); }
+        .badge.info { background-color: var(--info); }
+        
+        .badge.confirmed { background-color: #10b981; }
+        .badge.suspicious { background-color: #f59e0b; }
+        .badge.likely { background-color: #3b82f6; }
+
+        /* Findings Layout */
+        .finding-container {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .finding-header-block {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            margin-bottom: 1rem;
+        }
+
+        .finding-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .finding-header h3 {
+            margin: 0;
+            font-size: 1.15rem;
+            color: var(--primary);
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        .info-label {
+            width: 120px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .info-value {
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .content-block {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            margin-bottom: 1rem;
+        }
+
+        .content-block h4 {
+            margin: 0 0 0.25rem 0;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 2px;
+        }
+        
+        .content-block p {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Code Blocks & Evidence */
+        .evidence-label {
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.25rem;
+            color: var(--text-main);
+            break-after: avoid;
+            page-break-after: avoid;
+        }
+
+        .code-block {
+            background-color: #111827;
+            color: #e5e7eb;
+            border-radius: 4px;
+            padding: 8px 10px;
+            font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+            font-size: 9px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            overflow: visible;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-break-before {
+            page-break-before: always;
+            break-before: page;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 1. Cover / Metadata -->
+        <div class="header">
+            <h1>FlowShield Security Report</h1>
+            <p>Automated API Security Assessment</p>
+        </div>
+
+        <div class="metadata-card">
+            <h2 class="section-title">Metadata</h2>
+            <div class="grid-2">
+                <div>
+                    <div class="info-row"><span class="info-label">Project:</span> <span class="info-value"><strong>{{ project.name }}</strong></span></div>
+                    <div class="info-row"><span class="info-label">Target URL:</span> <span class="info-value">{{ project.base_url }}</span></div>
+                    <div class="info-row"><span class="info-label">Environment:</span> <span class="info-value">{% if project.environment_type == 'bug_bounty' %}<strong>Bug Bounty (Safe Mode)</strong>{% else %}Staging / Test{% endif %}</span></div>
+                </div>
+                <div>
+                    <div class="info-row"><span class="info-label">Scan ID:</span> <span class="info-value">{{ scan.id }}</span></div>
+                    <div class="info-row"><span class="info-label">Date:</span> <span class="info-value">{{ scan.started_at }}</span></div>
+                    <div class="info-row"><span class="info-label">ROE Confirmed:</span> <span class="info-value">{{ 'Yes' if scan.roe_confirmed else 'No' }}</span></div>
+                </div>
+            </div>
+            
+            {% if project.environment_type == 'bug_bounty' %}
+            <div style="margin-top: 1rem; padding: 0.5rem; border-left: 3px solid var(--primary); background-color: #f0f9ff;">
+                <strong>Bug Bounty Safe Mode Active</strong><br/>
+                Execution Mode: {% if scan.dry_run %}Dry Run (No requests sent){% else %}Live Execution{% endif %}<br/>
+                Request Budget: {{ scan.events|selectattr("phase", "equalto", "executing")|selectattr("message", "match", "Executed.*requests total")|map(attribute="message")|first | default("Unknown") }} / {{ target_config.max_total_requests }} Max<br/>
+                Rules: Strict Scope, No Destructive Testing, No State Changes
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 2. Executive Summary -->
+        <div class="summary-card">
+            <h2 class="section-title">Executive Summary</h2>
+            <div class="grid-2" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 1rem;">
+                <div class="metric">
+                    <div class="metric-value">{{ total_endpoints }}</div>
+                    <div class="metric-label">Endpoints</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">{{ total_tests }}</div>
+                    <div class="metric-label">Tests Generated</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">{{ total_findings }}</div>
+                    <div class="metric-label">Total Findings</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" style="color: var(--{{ overall_risk | lower }});">{{ overall_risk }}</div>
+                    <div class="metric-label">Overall Risk</div>
+                </div>
+            </div>
+
+            <p>This report details the findings from an automated API security scan targeting {{ project.name }}. The scan performed authenticated grey-box testing, focusing on Business Logic Vulnerabilities such as BOLA (Broken Object Level Authorization), BFLA (Broken Function Level Authorization), and Mass Assignment.</p>
+        </div>
+
+        <!-- 3. Scope -->
+        <div class="report-section">
+            <h2 class="section-title">Testing Scope</h2>
+            <div class="info-row"><span class="info-label">Allowed Hosts:</span> <span class="info-value">
+                {% for host in target_config.allowed_hosts %}
+                    <code>{{ host }}</code>{% if not loop.last %}, {% endif %}
+                {% else %}
+                    Any
+                {% endfor %}
+            </span></div>
+            <div class="info-row"><span class="info-label">Allowed Paths:</span> <span class="info-value">
+                {% for path in target_config.allowed_paths %}
+                    <code>{{ path }}</code>{% if not loop.last %}, {% endif %}
+                {% else %}
+                    /*
+                {% endfor %}
+            </span></div>
+        </div>
+
+        <!-- 4. Methodology -->
+        <div class="report-section">
+            <h2 class="section-title">Methodology</h2>
+            <ul style="margin:0; padding-left: 1.5rem;">
+                <li><strong>Grey-box testing:</strong> The scanner utilizes an OpenAPI/Swagger definition to understand the API surface.</li>
+                <li><strong>Multi-role testing:</strong> Test cases are executed under different user contexts (e.g., Customer vs. Admin) to identify vertical and horizontal privilege escalation.</li>
+                <li><strong>Deterministic engines:</strong> Specialized heuristic engines are used to automatically find and exploit BOLA, BFLA, and Mass Assignment flaws.</li>
+                <li><strong>Evidence-based verification:</strong> Findings are only confirmed if the server responds with definitive proof of vulnerability.</li>
+            </ul>
+        </div>
+
+        <!-- 5. Findings Summary Table -->
+        <div class="report-section page-break-before">
+            <h2 class="section-title">Findings Summary</h2>
+            {% if findings %}
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Severity</th>
+                        <th style="width: 18%;">Category</th>
+                        <th style="width: 32%;">Vulnerability</th>
+                        <th style="width: 28%;">Endpoint</th>
+                        <th style="width: 10%;">Confidence</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in findings %}
+                    <tr>
+                        <td><span class="badge {{ f.severity | lower }}">{{ f.severity }}</span></td>
+                        <td>{{ f.category }}</td>
+                        <td>{{ f.title }}</td>
+                        <td class="endpoint-cell">{{ f.endpoint_method }} {{ f.endpoint_path }}</td>
+                        <td><span class="badge {{ f.confidence | lower }}">{{ f.confidence }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No vulnerabilities were found during this scan.</p>
+            {% endif %}
+        </div>
+
+        <!-- 6. Detailed Findings -->
+        {% if findings %}
+        <div class="page-break-before">
+            <h2 class="section-title">Detailed Findings</h2>
+            
+            {% for f in findings %}
+            <div class="finding-container">
+                <div class="finding-header-block">
+                    <div class="finding-header">
+                        <h3>{{ loop.index }}. {{ f.title }}</h3>
+                        <div>
+                            <span class="badge {{ f.severity | lower }}">{{ f.severity }}</span>
+                            <span class="badge {{ f.confidence | lower }}">{{ f.confidence }}</span>
+                        </div>
+                    </div>
+                    <div class="info-row"><span class="info-label">Category:</span> <span class="info-value">{{ f.category }}</span></div>
+                    <div class="info-row"><span class="info-label">Endpoint:</span> <span class="info-value endpoint-cell" style="font-size: 11px;">{{ f.endpoint_method }} {{ f.endpoint_path }}</span></div>
+                    <div class="info-row"><span class="info-label">Attacker Role:</span> <span class="info-value">{{ f.attacker_role or "None" }}</span></div>
+                </div>
+                
+                <div class="content-block">
+                    <h4>Description</h4>
+                    <p>{{ f.description }}</p>
+                </div>
+                
+                <div class="content-block">
+                    <h4>Impact</h4>
+                    <p>{{ f.impact }}</p>
+                </div>
+
+                <div class="content-block">
+                    <h4>Remediation</h4>
+                    <p>{{ f.remediation }}</p>
+                </div>
+
+                {% if f.evidence %}
+                <div class="content-block">
+                    <h4>Evidence Summary</h4>
+                    <p>{{ f.evidence.proof_text }}</p>
+                </div>
+
+                <div class="evidence-label">Request</div>
+                <div class="code-block">{{ f.evidence.request_method }} {{ f.evidence.request_url }}
+{% if f.evidence.request_body_redacted %}
+{{ f.evidence.request_body_redacted | tojson(indent=2) }}
+{% endif %}</div>
+
+                {% if f.evidence.response_body_redacted %}
+                    {% set chunks = f.evidence.response_body_redacted | chunk_text %}
+                    {% for chunk in chunks %}
+                        <div class="evidence-label">Response ({{ f.evidence.response_status }}){% if not loop.first %} - continued{% endif %}</div>
+                        <div class="code-block">{{ chunk }}</div>
+                    {% endfor %}
+                {% else %}
+                    <div class="evidence-label">Response ({{ f.evidence.response_status }})</div>
+                    <div class="code-block">Empty Response</div>
+                {% endif %}
+                
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- 7. Recommendations -->
+        <div class="recommendation-card page-break-before">
+            <h2 class="section-title">General Recommendations</h2>
+            <ul style="margin:0; padding-left: 1.5rem;">
+                <li><strong>Enforce Ownership Checks (BOLA):</strong> Ensure that every endpoint querying or modifying a specific object validates that the authenticated user is the legitimate owner of that object.</li>
+                <li><strong>Enforce Function-Level Access Control (BFLA):</strong> Require strict Role-Based Access Control (RBAC) at the route handler level, rather than relying on UI hiding.</li>
+                <li><strong>Prevent Mass Assignment:</strong> Do not blindly bind request payloads to database models. Use explicit Data Transfer Objects (DTOs) and allowlists.</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

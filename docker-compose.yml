@@ -1,0 +1,84 @@
+
+
+networks:
+  flowshield_net:
+    driver: bridge
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-flowshield}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-flowshield_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-flowshield}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - flowshield_net
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://flowshield:flowshield_pass@db:5432/flowshield}
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app
+      - ./wordlists:/app/wordlists
+    networks:
+      - flowshield_net
+
+  worker:
+    build:
+      context: ./worker
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://flowshield:flowshield_pass@db:5432/flowshield}
+      - LLM_PROVIDER=${LLM_PROVIDER:-groq}
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.groq.com/openai/v1}
+      - LLM_MODEL=${LLM_MODEL:-openai/gpt-oss-20b}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+    depends_on:
+      - db
+      - backend
+    volumes:
+      - ./worker:/app
+      - ./wordlists:/app/wordlists
+    networks:
+      - flowshield_net
+
+  vulnerable-saas:
+    build:
+      context: ./vulnerable-saas
+    ports:
+      - "9000:9000"
+    environment:
+      - VULNERABLE_MODE=true
+    volumes:
+      - ./vulnerable-saas:/app
+    networks:
+      - flowshield_net
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - flowshield_net
+
+volumes:
+  pgdata:

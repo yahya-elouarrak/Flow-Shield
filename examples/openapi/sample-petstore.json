@@ -1,0 +1,277 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Sample Petstore API",
+    "description": "A minimal OpenAPI spec for testing FlowShield import.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    { "url": "http://localhost:9000" }
+  ],
+  "security": [
+    { "bearerAuth": [] }
+  ],
+  "paths": {
+    "/pets": {
+      "get": {
+        "operationId": "listPets",
+        "summary": "List all pets",
+        "tags": ["pets"],
+        "security": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of pets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Pet" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createPet",
+        "summary": "Create a pet",
+        "tags": ["pets"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PetCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created pet",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Pet" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pets/{petId}": {
+      "get": {
+        "operationId": "getPet",
+        "summary": "Get a pet by ID",
+        "tags": ["pets"],
+        "parameters": [
+          {
+            "name": "petId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A pet",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Pet" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deletePet",
+        "summary": "Delete a pet",
+        "tags": ["pets"],
+        "parameters": [
+          {
+            "name": "petId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/users/{userId}": {
+      "get": {
+        "operationId": "getUser",
+        "summary": "Get user profile",
+        "tags": ["users"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateUser",
+        "summary": "Update user profile",
+        "tags": ["users"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "role": { "type": "string" },
+                  "isAdmin": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated user",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "operationId": "listAllUsers",
+        "summary": "List all users (admin only)",
+        "tags": ["admin"],
+        "responses": {
+          "200": {
+            "description": "All users"
+          }
+        }
+      }
+    },
+    "/orders/{orderId}": {
+      "get": {
+        "operationId": "getOrder",
+        "summary": "Get order details",
+        "tags": ["orders"],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Order" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/refund": {
+      "post": {
+        "operationId": "processRefund",
+        "summary": "Process a payment refund",
+        "tags": ["payments"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "orderId": { "type": "string" },
+                  "amount": { "type": "number" },
+                  "reason": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Refund processed" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Pet": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "species": { "type": "string" }
+        }
+      },
+      "PetCreate": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "species": { "type": "string" }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "email": { "type": "string" },
+          "role": { "type": "string" },
+          "isAdmin": { "type": "boolean" }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "userId": { "type": "string" },
+          "total": { "type": "number" },
+          "status": { "type": "string" }
+        }
+      }
+    }
+  }
+}

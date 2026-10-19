@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark, .dark *));
+
+:root {
+  --fs-bg: #EEF3F8;
+  --fs-bg-secondary: #E6EDF5;
+  --fs-surface: #F8FAFC;
+  --fs-surface-elevated: #FFFFFF;
+  --fs-text: #07111F;
+  --fs-muted: #5C6B7E;
+  --fs-border: rgba(15, 23, 42, 0.10);
+  --fs-accent-cyan: #0891B2;
+  --fs-accent-blue: #2563EB;
+  --fs-accent-teal: #0D9488;
+}
+
+@theme inline {
+  --color-fs-bg: var(--fs-bg);
+  --color-fs-bg-secondary: var(--fs-bg-secondary);
+  --color-fs-surface: var(--fs-surface);
+  --color-fs-surface-elevated: var(--fs-surface-elevated);
+  --color-fs-text: var(--fs-text);
+  --color-fs-muted: var(--fs-muted);
+  --color-fs-border: var(--fs-border);
+  --color-fs-accent-cyan: var(--fs-accent-cyan);
+  --color-fs-accent-blue: var(--fs-accent-blue);
+  --color-fs-accent-teal: var(--fs-accent-teal);
+  
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+.dark {
+  --fs-bg: #020814;
+  --fs-bg-secondary: #061224;
+  --fs-surface: #0A1A2E;
+  --fs-surface-elevated: #0E2036;
+  --fs-text: #F8FAFC;
+  --fs-muted: #8B9AAF;
+  --fs-border: rgba(120, 180, 255, 0.16);
+  --fs-accent-cyan: #13D8E5;
+  --fs-accent-blue: #1267F1;
+  --fs-accent-teal: #14CFC3;
+}
+
+body {
+  background: var(--fs-bg);
+  color: var(--fs-text);
+}

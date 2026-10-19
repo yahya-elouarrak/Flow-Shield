@@ -1,0 +1,80 @@
+# ==============================================================================
+# FlowShield - Root .gitignore
+# ==============================================================================
+
+# ─── Secrets & Environment Variables ──────────────────────────────────────────
+# Prevent credential leakage (CWE-798)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+
+# ─── Python & Virtual Environments ────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Testing & Linting caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Local databases
+*.sqlite
+*.sqlite3
+*.db
+
+# ─── Node.js & Frontend (Next.js) ─────────────────────────────────────────────
+node_modules/
+.next/
+out/
+.vercel/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ─── Logs & Runtime Data ──────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── IDEs, Text Editors & Operating System ────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# ─── External Benchmark Targets ───────────────────────────────────────────────
+# Local clones of third-party vulnerable test benches (e.g., OWASP crAPI)
+crAPI/
